@@ -1,0 +1,30 @@
+name: CI/CD Security Pipeline
+
+# Trigger the robot whenever we push to the "main" branch
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out the code (Download it to the robot's workspace)
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Build the Docker Image
+      - name: Build Docker Image
+        run: docker build -t agritech-app .
+
+      # 3. Security Scan (The "Sec" in DevSecOps)
+      # We use Aquasecurity's Trivy scanner to look for known vulnerabilities
+      - name: Run Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'agritech-app'
+          format: 'table'
+          exit-code: '1' # Fail the build if critical issues are found
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
