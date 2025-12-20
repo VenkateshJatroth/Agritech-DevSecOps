@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AgriTech Live Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; background-color: #e0f7fa; padding: 20px; }
+
+        /* The Container for all cards */
+        .dashboard { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+
+        .card {
+            background: white; padding: 25px;
+            width: 250px; border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-5px); }
+
+        h1 { color: #00695c; margin-bottom: 30px; }
+        h3 { color: #555; margin: 0; font-size: 1.2em; }
+        .value { font-size: 3em; font-weight: bold; color: #333; margin: 10px 0; }
+        .unit { font-size: 0.5em; color: #888; }
+
+        /* 🔋 BATTERY GRAPHICS */
+        .battery-shell {
+            border: 3px solid #333; width: 80%; height: 30px;
+            margin: 0 auto; border-radius: 8px; padding: 3px; position: relative;
+        }
+        .battery-shell::after {
+            /* The little bump on the battery */
+            content: ''; position: absolute; right: -8px; top: 8px;
+            width: 5px; height: 14px; background: #333; border-radius: 0 2px 2px 0;
+        }
+        .battery-level {
+            height: 100%; background: #2e8b57; width: 100%;
+            border-radius: 4px; transition: width 0.5s, background 0.5s;
+        }
+    </style>
+    <div style="width: 100%; text-align: center; margin-top: 40px;">
+        <button onclick="sendAlert()"
+            style="background-color: #d32f2f; color: white; padding: 20px 40px;
+                   font-size: 1.5em; border: none; border-radius: 50px;
+                   box-shadow: 0 5px 15px rgba(211, 47, 47, 0.4);">
+            🔥 REPORT FIRE 🔥
+        </button>
+        <p id="alert_msg" style="color: red; font-weight: bold; margin-top: 10px;"></p>
+    </div>
+
+    <script>
+        // ... (Keep your existing fetchSensorData function here) ...
+
+        // NEW: Function to send the alert
+        function sendAlert() {
+            document.getElementById('alert_msg').innerText = "TRANSMITTING SIGNAL...";
+
+            fetch('/api/alert', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('alert_msg').innerText = "✅ HQ CONFIRMED!";
+                    // Vibrate phone if supported
+                    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                });
+        }
+    </script>
+</head>
+<body>
+
+    <h1>🚜 AgriTech Field Monitor v2.0</h1>
+    <p>Location: <strong id="loc">Connecting...</strong></p>
+
+    <div class="dashboard">
+        <div class="card">
+            <h3>🌡️ Temperature</h3>
+            <div class="value"><span id="temp">--</span><span class="unit">°C</span></div>
+        </div>
+
+        <div class="card">
+            <h3>💧 Humidity</h3>
+            <div class="value"><span id="hum">--</span><span class="unit">%</span></div>
+        </div>
+
+        <div class="card">
+            <h3>🔋 Sensor Health</h3>
+            <div class="value"><span id="batt_text">--</span><span class="unit">%</span></div>
+
+            <div class="battery-shell">
+                <div id="batt_bar" class="battery-level"></div>
+            </div>
+        </div>
+    </div>
+
+    <br>
+    <a href="/history" style="color: #00695c; text-decoration: none;">View Historical Logs ➡</a>
+
+    <script>
+        function fetchSensorData() {
+            fetch('/api/sensors')
+                .then(response => response.json())
+                .then(data => {
+                    // Update Text
+                    document.getElementById('loc').innerText = data.location;
+                    document.getElementById('temp').innerText = data.temperature;
+                    document.getElementById('hum').innerText = data.humidity;
+                    document.getElementById('batt_text').innerText = data.battery;
+
+                    // 🎨 Update the Graphical Bar Width
+                    const bar = document.getElementById('batt_bar');
+                    bar.style.width = data.battery + "%";
+
+                    // Color Logic: Turn RED if battery is low!
+                    if (data.battery < 20) {
+                        bar.style.backgroundColor = "#d32f2f"; // Red
+                    } else if (data.battery < 50) {
+                        bar.style.backgroundColor = "#fbc02d"; // Yellow
+                    } else {
+                        bar.style.backgroundColor = "#2e8b57"; // Green
+                    }
+                });
+        }
+
+        // Update every 1 second so you can see the drain faster
+        setInterval(fetchSensorData, 1000);
+        fetchSensorData();
+    </script>
+
+</body>
+</html>

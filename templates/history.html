@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sensor History</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: center; }
+        th { background-color: #2e8b57; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .back-btn { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: #333; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <a href="/" class="back-btn">⬅ Back to Dashboard</a>
+    <h1>📜 Sensor History Log</h1>
+
+    <form method="GET" action="/history">
+        <input type="text" name="q" placeholder="Filter by Temperature (e.g. 30)">
+        <button type="submit">Search</button>
+    </form>
+    <br>
+
+    <table>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Temperature (°C)</th>
+                <th>Humidity (%)</th>
+                <th>Time Recorded</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in readings %}
+            <tr>
+                <td>{{ row[0] }}</td>
+                <td>{{ row[1] }}</td>
+                <td>{{ row[2] }}</td>
+                <td>{{ row[3] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>

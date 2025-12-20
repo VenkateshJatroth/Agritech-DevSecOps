@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.log
+farm_data.db
+venv/
+.idea/
