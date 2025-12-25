@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Flask, jsonify, render_template, request
 import sqlite3
 from sensor import Sensor  # <--- 1. IMPORT YOUR NEW FILE
@@ -35,22 +36,31 @@ def home():
 
 @app.route('/api/sensors')
 def get_sensors():
-    # 🔴 3. ASK THE SENSOR FOR DATA
-    data = my_field_sensor.read_data()  # This drains 1% battery
+    # 1. Get new data from the sensor
+    data = my_field_sensor.read_data()
 
-    # Save to Database
+    # 2. CONNECT TO DATABASE (These are the lines you were missing!)
     conn = sqlite3.connect('farm_data.db')
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO readings (temperature, humidity) VALUES (?, ?)',
-                   (data['temp'], data['hum']))
+
+    # 3. Get current time (The new logic)
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    # 4. Save to Database
+    cursor.execute(
+        'INSERT INTO readings (temperature, humidity, timestamp) VALUES (?, ?, ?)', 
+        (data['temp'], data['hum'], current_time)
+    )
+    
+    # 5. Save and Close
     conn.commit()
     conn.close()
 
-    # Send to Frontend (Now including Battery!)
+    # 6. Send data to the frontend
     return jsonify({
         "temperature": data['temp'],
         "humidity": data['hum'],
-        "battery": data['battery'],  # <--- New Data!
+        "battery": data['battery'],
         "location": data['location']
     })
 
